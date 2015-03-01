@@ -9,12 +9,12 @@ import (
 )
 
 type ClientMessage struct {
-	command int
-	value   string
+	Command int
+	Value   string
 }
 
 type ServerMessage struct {
-	value string
+	Value string
 }
 
 func main() {
@@ -27,13 +27,19 @@ func main() {
 	encoder := gob.NewEncoder(conn)
 	decoder := gob.NewDecoder(conn)
 
-	message := ClientMessage{1, "test message"}
+	message := ClientMessage{Command: 1, Value: "test message"}
+	fmt.Println("Sending message")
+
 	encoder.Encode(message)
+	fmt.Println("message sent")
 
 	var serversResponse ServerMessage
+	fmt.Println("waiting for response")
 	decoder.Decode(&serversResponse)
-	fmt.Println(serversResponse.value)
+	fmt.Println("message received")
+	fmt.Println(serversResponse.Value)
 
+	conn.Close()
 	os.Exit(0)
 }
 
