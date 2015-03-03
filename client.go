@@ -25,19 +25,19 @@ func logInTest(){
 	checkError(err)
 
 	encoder := gob.NewEncoder(conn)
-	decoder := gob.NewDecoder(conn)
+	//decoder := gob.NewDecoder(conn)
 
-	message := ClientMessage{Command: 0, Value: "test message"}
+	message := ClientMessage{Command: 0, Value: "testChar password"}
 	fmt.Println("Sending message")
 
 	encoder.Encode(message)
 	fmt.Println("message sent")
 
-	var serversResponse ServerMessage
-	fmt.Println("waiting for response")
-	decoder.Decode(&serversResponse)
-	fmt.Println("message received")
-	fmt.Println(serversResponse.Value)
+//	var serversResponse ServerMessage
+//	fmt.Println("waiting for response")
+//	decoder.Decode(&serversResponse)
+//	fmt.Println("message received")
+//	fmt.Println(serversResponse.Value)
 
 	conn.Close()
 }
