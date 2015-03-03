@@ -8,11 +8,6 @@ import (
 	"os"
 )
 
-type ClientMessage struct {
-	Command int
-	Value   string
-}
-
 type ServerMessage struct {
 	Value string
 }
