@@ -19,6 +19,36 @@ type ServerMessage struct {
 
 func main() {
 
+	logInTest()
+	os.Exit(0)
+}
+
+func logInTest(){
+	service := "127.0.0.1:1200"
+
+	conn, err := net.Dial("tcp", service)
+	checkError(err)
+
+	encoder := gob.NewEncoder(conn)
+	decoder := gob.NewDecoder(conn)
+
+	message := ClientMessage{Command: 0, Value: "test message"}
+	fmt.Println("Sending message")
+
+	encoder.Encode(message)
+	fmt.Println("message sent")
+
+	var serversResponse ServerMessage
+	fmt.Println("waiting for response")
+	decoder.Decode(&serversResponse)
+	fmt.Println("message received")
+	fmt.Println(serversResponse.Value)
+
+	conn.Close()
+}
+
+
+func gobTest(){
 	service := "127.0.0.1:1200"
 
 	conn, err := net.Dial("tcp", service)
@@ -40,7 +70,6 @@ func main() {
 	fmt.Println(serversResponse.Value)
 
 	conn.Close()
-	os.Exit(0)
 }
 
 func printFormattedServerMessage(message string) {
