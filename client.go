@@ -2,50 +2,48 @@
 package main
 
 import (
+	"bufio"
 	"encoding/gob"
 	"fmt"
 	"net"
 	"os"
+	"sync"
 )
-
-//import "github.com/daviddengcn/go-colortext"
 
 type ServerMessage struct {
 	Value string
 }
 
+var net_lock sync.Mutex
+
 func main() {
-	var foo Room
+
 	logInTest()
 	os.Exit(0)
 }
 
 func logInTest() {
+	service := "127.0.0.1:1200"
 
-	fmt.Printf("\x1b[31Hello, World!\x1b[0m test\n")
-	fmt.Println("\x1b[31;1mHello, World!\x1b[0m")
+	conn, err := net.Dial("tcp", service)
+	checkError(err)
 
-	//	service := "127.0.0.1:1200"
+	encoder := gob.NewEncoder(conn)
+	//decoder := gob.NewDecoder(conn)
 
-	//	conn, err := net.Dial("tcp", service)
-	//	checkError(err)
+	message := ClientMessage{Command: 0, Value: "testChar password"}
+	fmt.Println("Sending message")
 
-	//	encoder := gob.NewEncoder(conn)
-	//	//decoder := gob.NewDecoder(conn)
+	encoder.Encode(message)
+	fmt.Println("message sent")
 
-	//	message := ClientMessage{Command: 0, Value: "testChar password"}
-	//	fmt.Println("Sending message")
+	//	var serversResponse ServerMessage
+	//	fmt.Println("waiting for response")
+	//	decoder.Decode(&serversResponse)
+	//	fmt.Println("message received")
+	//	fmt.Println(serversResponse.Value)
 
-	//	encoder.Encode(message)
-	//	fmt.Println("message sent")
-
-	////	var serversResponse ServerMessage
-	////	fmt.Println("waiting for response")
-	////	decoder.Decode(&serversResponse)
-	////	fmt.Println("message received")
-	////	fmt.Println(serversResponse.Value)
-
-	//	conn.Close()
+	conn.Close()
 }
 
 func gobTest() {
@@ -54,21 +52,56 @@ func gobTest() {
 	conn, err := net.Dial("tcp", service)
 	checkError(err)
 
+	/*
+		encoder := gob.NewEncoder(conn)
+		decoder := gob.NewDecoder(conn)
+
+		message := ClientMessage{Command: 1, Value: "test message"}
+		fmt.Println("Sending message")
+
+		encoder.Encode(message)
+		fmt.Println("message sent")
+
+		var serversResponse ServerMessage
+		fmt.Println("waiting for response")
+		decoder.Decode(&serversResponse)
+		fmt.Println("message received")
+		fmt.Println(serversResponse.Value)
+
+		conn.Close()
+		os.Exit(0)*/
+
+	go receiveMessage(conn)
+
 	encoder := gob.NewEncoder(conn)
-	decoder := gob.NewDecoder(conn)
+	reader := bufio.NewReader(os.Stdin)
+	for {
 
-	message := ClientMessage{Command: 1, Value: "test message"}
-	fmt.Println("Sending message")
+		fmt.Print("Enter text: ")
+		text, _ := reader.ReadString('\n')
+		message := ClientMessage{Command: 1, Value: text}
+		//net_lock.Lock()
+		encoder.Encode(message)
+		//net_lock.Unlock()
 
-	encoder.Encode(message)
-	fmt.Println("message sent")
+	}
+
+}
+
+func receiveMessage(conn net.Conn) {
 
 	var serversResponse ServerMessage
-	fmt.Println("waiting for response")
-	decoder.Decode(&serversResponse)
-	fmt.Println("message received")
-	fmt.Println(serversResponse.Value)
-
+	decoder := gob.NewDecoder(conn)
+	for {
+		//net_lock.Lock()
+		err := decoder.Decode(&serversResponse)
+		//net_lock.Unlock()
+		checkError(err)
+		if err == nil {
+			fmt.Println("message received")
+			fmt.Println(serversResponse.Value)
+		}
+	}
 	conn.Close()
 }
 
