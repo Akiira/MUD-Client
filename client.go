@@ -8,42 +8,47 @@ import (
 	"os"
 )
 
+//import "github.com/daviddengcn/go-colortext"
+
 type ServerMessage struct {
 	Value string
 }
 
 func main() {
-
+	var foo Room
 	logInTest()
 	os.Exit(0)
 }
 
-func logInTest(){
-	service := "127.0.0.1:1200"
+func logInTest() {
 
-	conn, err := net.Dial("tcp", service)
-	checkError(err)
+	fmt.Printf("\x1b[31Hello, World!\x1b[0m test\n")
+	fmt.Println("\x1b[31;1mHello, World!\x1b[0m")
 
-	encoder := gob.NewEncoder(conn)
-	//decoder := gob.NewDecoder(conn)
+	//	service := "127.0.0.1:1200"
 
-	message := ClientMessage{Command: 0, Value: "testChar password"}
-	fmt.Println("Sending message")
+	//	conn, err := net.Dial("tcp", service)
+	//	checkError(err)
 
-	encoder.Encode(message)
-	fmt.Println("message sent")
+	//	encoder := gob.NewEncoder(conn)
+	//	//decoder := gob.NewDecoder(conn)
 
-//	var serversResponse ServerMessage
-//	fmt.Println("waiting for response")
-//	decoder.Decode(&serversResponse)
-//	fmt.Println("message received")
-//	fmt.Println(serversResponse.Value)
+	//	message := ClientMessage{Command: 0, Value: "testChar password"}
+	//	fmt.Println("Sending message")
 
-	conn.Close()
+	//	encoder.Encode(message)
+	//	fmt.Println("message sent")
+
+	////	var serversResponse ServerMessage
+	////	fmt.Println("waiting for response")
+	////	decoder.Decode(&serversResponse)
+	////	fmt.Println("message received")
+	////	fmt.Println(serversResponse.Value)
+
+	//	conn.Close()
 }
 
-
-func gobTest(){
+func gobTest() {
 	service := "127.0.0.1:1200"
 
 	conn, err := net.Dial("tcp", service)
