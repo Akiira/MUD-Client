@@ -5,21 +5,70 @@ import (
 	"bufio"
 	"encoding/gob"
 	"fmt"
+	"github.com/daviddengcn/go-colortext"
 	"net"
 	"os"
 	"sync"
 )
 
-type ServerMessage struct {
+type FormattedString struct {
+	Color ct.Color
 	Value string
+}
+type ServerMessage struct {
+	Value []FormattedString
 }
 
 var net_lock sync.Mutex
 
 func main() {
 
-	logInTest()
+	Test()
 	os.Exit(0)
+}
+
+func Test() {
+	service := "127.0.0.1:1200"
+
+	conn, err := net.Dial("tcp", service)
+	checkError(err)
+
+	encoder := gob.NewEncoder(conn)
+	decoder := gob.NewDecoder(conn)
+
+	message := ClientMessage{Command: "initialMessage", Value: "Ragnar"}
+	fmt.Println("Sending message")
+
+	encoder.Encode(message)
+	fmt.Println("message sent")
+
+	var serversResponse ServerMessage
+	fmt.Println("waiting for response")
+	decoder.Decode(&serversResponse)
+	fmt.Println("message received: ")
+	//fmt.Println(serversResponse.Value)
+
+	printFormatedOutput(serversResponse.Value)
+
+	message = ClientMessage{Command: "say", Value: "test say"}
+	encoder.Encode(message)
+	fmt.Println("message 2 sent")
+	for {
+		fmt.Println("waiting for response")
+		decoder.Decode(&serversResponse)
+		fmt.Println("Message received: ", serversResponse)
+		printFormatedOutput(serversResponse.Value)
+	}
+
+	conn.Close()
+}
+
+func printFormatedOutput(output []FormattedString) {
+	for _, element := range output {
+		ct.ChangeColor(element.Color, false, ct.Black, false)
+		fmt.Println(element.Value)
+	}
+	ct.ResetColor()
 }
 
 func logInTest() {
@@ -31,7 +80,7 @@ func logInTest() {
 	encoder := gob.NewEncoder(conn)
 	decoder := gob.NewDecoder(conn)
 
-	message := ClientMessage{Command: 0, Value: "testChar password"}
+	message := ClientMessage{Command: "look", Value: "testChar password"}
 	fmt.Println("Sending message")
 
 	encoder.Encode(message)
@@ -79,7 +128,7 @@ func gobTest() {
 
 		fmt.Print("Enter text: ")
 		text, _ := reader.ReadString('\n')
-		message := ClientMessage{Command: 1, Value: text}
+		message := ClientMessage{Command: "test", Value: text}
 		//net_lock.Lock()
 		encoder.Encode(message)
 		//net_lock.Unlock()
@@ -104,11 +153,6 @@ func receiveMessage(conn net.Conn) {
 	}
 	conn.Close()
 }
-
-func printFormattedServerMessage(message string) {
-
-}
-
 func checkError(err error) {
 	if err != nil {
 		fmt.Println("Fatal error ", err.Error())
