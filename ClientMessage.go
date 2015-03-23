@@ -6,12 +6,13 @@ import (
 )
 
 type ClientMessage struct {
-	Command string
-	Value   string
+	combatAction bool
+	Command      string
+	Value        string
 }
 
 func ClientMessageConstructor(cmd string, val string) ClientMessage {
-	return ClientMessage{Command: cmd, Value: val}
+	return ClientMessage{combatAction: false, Command: cmd, Value: val}
 }
 
 func (message *ClientMessage) getPassword() string {
