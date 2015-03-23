@@ -2,7 +2,7 @@
 package main
 
 import (
-	"bufio"
+	_ "bufio"
 	"encoding/gob"
 	"fmt"
 	"github.com/daviddengcn/go-colortext"
@@ -69,7 +69,7 @@ func getInputFromUser(encoder *gob.Encoder) {
 		} else { //assume movement
 			msg.setToMovementMessage(input)
 		}
-
+		fmt.Println("Sending: ", msg)
 		encoder.Encode(msg)
 
 		if msg.Command == "exit" {
