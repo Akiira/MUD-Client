@@ -15,6 +15,18 @@ func ClientMessageConstructor(cmd string, val string) ClientMessage {
 	return ClientMessage{combatAction: false, Command: cmd, Value: val}
 }
 
+func (msg *ClientMessage) setAll(combatAction bool, cmd string, val string) {
+	msg.combatAction = combatAction
+	msg.Command = cmd
+	msg.Value = val
+}
+
+func (msg *ClientMessage) setAllNonCombat(cmd string, val string) {
+	msg.combatAction = false
+	msg.Command = cmd
+	msg.Value = val
+}
+
 func (message *ClientMessage) getPassword() string {
 	split := strings.Split(message.Value, " ")
 	return split[1]
