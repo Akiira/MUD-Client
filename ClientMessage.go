@@ -21,6 +21,12 @@ func (msg *ClientMessage) setToMovementMessage(direction string) {
 	msg.Value = direction
 }
 
+func (msg *ClientMessage) setToSayMessage(thingToSay string) {
+	msg.CombatAction = false
+	msg.Command = "say"
+	msg.Value = thingToSay
+}
+
 func (msg *ClientMessage) setToGetMessage(item string) {
 	msg.CombatAction = false
 	msg.Command = "get"

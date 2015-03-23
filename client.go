@@ -2,7 +2,7 @@
 package main
 
 import (
-	_ "bufio"
+	"bufio"
 	"encoding/gob"
 	"fmt"
 	"github.com/daviddengcn/go-colortext"
@@ -44,6 +44,7 @@ func Test2() {
 }
 
 func getInputFromUser(encoder *gob.Encoder) {
+	in := bufio.NewReader(os.Stdin)
 	for {
 		var msg ClientMessage
 		var input string
@@ -66,6 +67,10 @@ func getInputFromUser(encoder *gob.Encoder) {
 			var item string
 			read, err = fmt.Scan(&item)
 			msg.setToGetMessage(item)
+		} else if input == "say" {
+			line, err := in.ReadString('\n')
+			checkError(err)
+			msg.setToSayMessage(line)
 		} else { //assume movement
 			msg.setToMovementMessage(input)
 		}
