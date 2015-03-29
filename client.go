@@ -25,8 +25,26 @@ var net_lock sync.Mutex
 
 func main() {
 
-	Test2()
+	TestLogin()
 	os.Exit(0)
+}
+func TestLogin() {
+	service := "127.0.0.1:1200"
+
+	conn, err := net.Dial("tcp", service)
+	checkError(err)
+	defer conn.Close()
+
+	encoder := gob.NewEncoder(conn)
+	decoder := gob.NewDecoder(conn)
+
+	message := ClientMessage{CommandType: CommandLogin, Command: "initialMessage", Value: "Hablo password"}
+	fmt.Println("Sending message")
+
+	var serversResponse ServerMessage
+	decoder.Decode(&serversResponse)
+	printFormatedOutput(serversResponse.MsgDetail)
+
 }
 
 func Test2() {
@@ -39,10 +57,12 @@ func Test2() {
 	encoder := gob.NewEncoder(conn)
 	decoder := gob.NewDecoder(conn)
 
-	message := ClientMessage{Command: "initialMessage", Value: "Ragnar"}
-	encoder.Encode(message)
+	message := ClientMessage{CommandType: CommandLogin, Command: "initialMessage", Value: "Hablo password"}
+	fmt.Println("Sending message")
+
 	go nonBlockingRead(decoder)
 	getInputFromUser(encoder)
+
 }
 
 func getInputFromUser(encoder *gob.Encoder) {
