@@ -16,7 +16,9 @@ type FormattedString struct {
 	Value string
 }
 type ServerMessage struct {
-	Value []FormattedString
+	MsgType   int
+	MsgDetail string
+	Value     []FormattedString
 }
 
 var net_lock sync.Mutex
