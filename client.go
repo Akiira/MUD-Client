@@ -31,7 +31,7 @@ func logInTest() {
 	encoder := gob.NewEncoder(conn)
 	//decoder := gob.NewDecoder(conn)
 
-	message := ClientMessage{Command: CommandLogin, Value: "Hablo password"}
+	message := ClientMessage{MsgType: CommandLogin, Command: "initialMessage", Value: "Hablo password"}
 	fmt.Println("Sending message")
 
 	encoder.Encode(message)
