@@ -5,6 +5,9 @@ import (
 	"strings"
 )
 
+//command for error
+const ErrorUnexpectedCommand = 201
+
 //command for system
 const CommandLogin = 101
 const CommandLogout = 102
@@ -23,8 +26,10 @@ const CommandJoinWorld = 21 // will change the room occur the same time with lea
 
 //this is suppose to be an event
 type ClientMessage struct {
-	Command int
-	Value   string
+	CommandType  int
+	CombatAction bool
+	Command      string
+	Value        string
 }
 
 func ClientMessageConstructor(cmd int, val string) ClientMessage {
