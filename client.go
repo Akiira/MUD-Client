@@ -29,9 +29,9 @@ func logInTest() {
 	checkError(err)
 
 	encoder := gob.NewEncoder(conn)
-	//decoder := gob.NewDecoder(conn)
+	decoder := gob.NewDecoder(conn)
 
-	message := ClientMessage{MsgType: CommandLogin, Command: "initialMessage", Value: "Hablo password"}
+	message := ClientMessage{CommandType: CommandLogin, Command: "initialMessage", Value: "Hablo password"}
 	fmt.Println("Sending message")
 
 	encoder.Encode(message)
@@ -39,9 +39,16 @@ func logInTest() {
 
 	var serversResponse ServerMessage
 	fmt.Println("waiting for response")
-	decoder.Decode(&serversResponse)
-	fmt.Println("message received")
-	fmt.Println(serversResponse)
+	for {
+
+		err := decoder.Decode(&serversResponse)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
+			os.Exit(1)
+		}
+		fmt.Println("message received")
+		fmt.Println(serversResponse)
+	}
 
 	conn.Close()
 }
@@ -79,7 +86,7 @@ func gobTest() {
 
 		fmt.Print("Enter text: ")
 		text, _ := reader.ReadString('\n')
-		message := ClientMessage{Command: 1, Value: text}
+		message := ClientMessage{Command: "test", Value: text}
 		//net_lock.Lock()
 		encoder.Encode(message)
 		//net_lock.Unlock()
