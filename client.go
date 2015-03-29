@@ -25,26 +25,42 @@ var net_lock sync.Mutex
 
 func main() {
 
-	TestLogin()
+	logInTest()
 	os.Exit(0)
 }
-func TestLogin() {
+
+func logInTest() {
 	service := "127.0.0.1:1200"
 
 	conn, err := net.Dial("tcp", service)
 	checkError(err)
-	defer conn.Close()
 
 	encoder := gob.NewEncoder(conn)
 	decoder := gob.NewDecoder(conn)
 
-	message := ClientMessage{CommandType: CommandLogin, Command: "initialMessage", Value: "Hablo password"}
+	message := ClientMessage{CommandType: CommandLogin, Command: "initialMessage", Value: "Haplo password"}
 	fmt.Println("Sending message")
 
-	var serversResponse ServerMessage
-	decoder.Decode(&serversResponse)
-	printFormatedOutput(serversResponse.MsgDetail)
+	encoder.Encode(message)
+	fmt.Println("message sent")
 
+	var serversResponse ServerMessage
+	fmt.Println("waiting for response")
+	for {
+
+		err := decoder.Decode(&serversResponse)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
+			os.Exit(1)
+		}
+		fmt.Println("message received")
+		fmt.Println(serversResponse)
+		if serversResponse.MsgType == CommandRedirectServer {
+			fmt.Println("redirecting to " + serversResponse.MsgDetail)
+		}
+	}
+
+	conn.Close()
 }
 
 func Test2() {
@@ -57,12 +73,10 @@ func Test2() {
 	encoder := gob.NewEncoder(conn)
 	decoder := gob.NewDecoder(conn)
 
-	message := ClientMessage{CommandType: CommandLogin, Command: "initialMessage", Value: "Hablo password"}
-	fmt.Println("Sending message")
-
+	message := ClientMessage{Command: "initialMessage", Value: "Ragnar"}
+	encoder.Encode(message)
 	go nonBlockingRead(decoder)
 	getInputFromUser(encoder)
-
 }
 
 func getInputFromUser(encoder *gob.Encoder) {
