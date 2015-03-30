@@ -15,6 +15,10 @@ type FormattedString struct {
 	Color ct.Color
 	Value string
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> refs/heads/login_logout
 type ServerMessage struct {
 	MsgType   int
 	MsgDetail string
@@ -32,6 +36,7 @@ func main() {
 func logInTest() {
 	service := "127.0.0.1:1200"
 
+<<<<<<< HEAD
 	conn, err := net.Dial("tcp", service)
 	checkError(err)
 
@@ -46,8 +51,11 @@ func logInTest() {
 
 	var serversResponse ServerMessage
 	fmt.Println("waiting for response")
+=======
+>>>>>>> refs/heads/login_logout
 	for {
 
+<<<<<<< HEAD
 		err := decoder.Decode(&serversResponse)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
@@ -59,8 +67,41 @@ func logInTest() {
 			fmt.Println("redirecting to " + serversResponse.MsgDetail)
 		}
 	}
+=======
+		conn, err := net.Dial("tcp", service)
+		checkError(err)
+>>>>>>> refs/heads/login_logout
 
-	conn.Close()
+		encoder := gob.NewEncoder(conn)
+		decoder := gob.NewDecoder(conn)
+
+		message := ClientMessage{CommandType: CommandLogin, Command: "login", Value: "Haplo password"}
+		fmt.Println("Sending message")
+
+		encoder.Encode(message)
+		fmt.Println("message sent")
+
+		var serversResponse ServerMessage
+		fmt.Println("waiting for response")
+		for {
+
+			err := decoder.Decode(&serversResponse)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
+				os.Exit(1)
+			} else {
+				if serversResponse.MsgType == CommandRedirectServer {
+					service = serversResponse.MsgDetail
+					break
+				} else {
+					fmt.Println("message received")
+					fmt.Println(serversResponse)
+				}
+			}
+		}
+
+		conn.Close()
+	}
 }
 
 func Test2() {
