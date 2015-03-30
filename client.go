@@ -5,13 +5,21 @@ import (
 	"bufio"
 	"encoding/gob"
 	"fmt"
+	"github.com/daviddengcn/go-colortext"
 	"net"
 	"os"
 	"sync"
 )
 
-type ServerMessage struct {
+type FormattedString struct {
+	Color ct.Color
 	Value string
+}
+
+type ServerMessage struct {
+	MsgType   int
+	MsgDetail string
+	Value     []FormattedString
 }
 
 var net_lock sync.Mutex
@@ -25,32 +33,41 @@ func main() {
 func logInTest() {
 	service := "127.0.0.1:1200"
 
-	conn, err := net.Dial("tcp", service)
-	checkError(err)
-
-	encoder := gob.NewEncoder(conn)
-	decoder := gob.NewDecoder(conn)
-
-	message := ClientMessage{CommandType: CommandLogin, Command: "initialMessage", Value: "Hablo password"}
-	fmt.Println("Sending message")
-
-	encoder.Encode(message)
-	fmt.Println("message sent")
-
-	var serversResponse ServerMessage
-	fmt.Println("waiting for response")
 	for {
 
-		err := decoder.Decode(&serversResponse)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
-			os.Exit(1)
-		}
-		fmt.Println("message received")
-		fmt.Println(serversResponse)
-	}
+		conn, err := net.Dial("tcp", service)
+		checkError(err)
 
-	conn.Close()
+		encoder := gob.NewEncoder(conn)
+		decoder := gob.NewDecoder(conn)
+
+		message := ClientMessage{CommandType: CommandLogin, Command: "login", Value: "Haplo password"}
+		fmt.Println("Sending message")
+
+		encoder.Encode(message)
+		fmt.Println("message sent")
+
+		var serversResponse ServerMessage
+		fmt.Println("waiting for response")
+		for {
+
+			err := decoder.Decode(&serversResponse)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
+				os.Exit(1)
+			} else {
+				if serversResponse.MsgType == CommandRedirectServer {
+					service = serversResponse.MsgDetail
+					break
+				} else {
+					fmt.Println("message received")
+					fmt.Println(serversResponse)
+				}
+			}
+		}
+
+		conn.Close()
+	}
 }
 
 func gobTest() {
