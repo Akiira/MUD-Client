@@ -8,6 +8,7 @@ import (
 	"github.com/daviddengcn/go-colortext"
 	"net"
 	"os"
+	"strings"
 	"sync"
 )
 
@@ -17,9 +18,7 @@ type FormattedString struct {
 }
 
 type ServerMessage struct {
-	MsgType   int
-	MsgDetail string
-	Value     []FormattedString
+	Value []FormattedString
 }
 
 var net_lock sync.Mutex
@@ -31,17 +30,18 @@ func main() {
 }
 
 func logInTest() {
-	service := "127.0.0.1:1200"
+	service := "127.0.0.1:7200"
 
 	for {
 
 		conn, err := net.Dial("tcp", service)
 		checkError(err)
+		fmt.Println("established new connection")
 
 		encoder := gob.NewEncoder(conn)
 		decoder := gob.NewDecoder(conn)
 
-		message := ClientMessage{CommandType: CommandLogin, Command: "login", Value: "Haplo password"}
+		message := ClientMessage{Command: CommandLogin, Value: "Haplo password"}
 		fmt.Println("Sending message")
 
 		encoder.Encode(message)
@@ -56,17 +56,22 @@ func logInTest() {
 				fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
 				os.Exit(1)
 			} else {
-				if serversResponse.MsgType == CommandRedirectServer {
-					service = serversResponse.MsgDetail
-					break
-				} else {
-					fmt.Println("message received")
-					fmt.Println(serversResponse)
+				if !serversResponse.isError() {
+
+					if serversResponse.getServerSystemMessageType() == CommandRedirectServer {
+						service = serversResponse.getServerSystemMessageDetail()
+						break
+					} else if serversResponse.isError() {
+
+						fmt.Println(serversResponse.getServerSystemMessageType())
+						fmt.Println(serversResponse.getServerSystemMessageDetail())
+						os.Exit(1)
+					}
 				}
 			}
-		}
 
-		conn.Close()
+			conn.Close()
+		}
 	}
 }
 
@@ -149,4 +154,32 @@ func checkError(err error) {
 		fmt.Println("Fatal error ", err.Error())
 		os.Exit(1)
 	}
+}
+
+func newServerMessage(msgs []FormattedString) ServerMessage {
+	return ServerMessage{Value: msgs}
+}
+
+func (msg *ServerMessage) getMessage() string {
+	if len(msg.Value) == 0 {
+		return ""
+	}
+	return msg.Value[0].Value
+}
+
+func (msg *ServerMessage) isError() bool {
+	if len(msg.Value) == 0 {
+		return false
+	}
+
+	return (strings.Split(msg.getMessage(), " ")[0] == ServerErrorMessage)
+}
+
+func (svMsg *ServerMessage) getServerSystemMessageType() string {
+
+	return svMsg.Value[0].Value
+}
+func (svMsg *ServerMessage) getServerSystemMessageDetail() string {
+
+	return svMsg.Value[1].Value
 }
