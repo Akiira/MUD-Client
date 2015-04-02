@@ -33,7 +33,6 @@ const CommandJoinWorld = 21 // will change the room occur the same time with lea
 
 //this is suppose to be an event
 type ClientMessage struct {
-	CommandType  int
 	CombatAction bool
 	Command      string
 	Value        string
