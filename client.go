@@ -28,9 +28,6 @@ func main() {
 func runClient() {
 	connectToServer("127.0.0.1:1200")
 
-	message := ClientMessage{Command: "initialMessage", Value: "Ragnar"}
-	encoder.Encode(message)
-
 	go nonBlockingRead()
 	getInputFromUser()
 }
@@ -69,7 +66,9 @@ func getInputFromUser() {
 		fmt.Println("Sending: ", msg)
 
 		net_lock.Lock()
-		encoder.Encode(msg)
+
+		err = encoder.Encode(msg)
+		checkError(err)
 		net_lock.Unlock()
 
 		if msg.Command == "exit" {
@@ -83,11 +82,13 @@ func getInputFromUser() {
 func nonBlockingRead() {
 	for {
 		var serversResponse ServerMessage
-		decoder.Decode(&serversResponse)
+		err := decoder.Decode(&serversResponse)
+		checkError(err)
 
 		if serversResponse.MsgType == REDIRECT {
 			net_lock.Lock()
-			conn.Close()
+			err := conn.Close()
+			checkError(err)
 			connectToServer(serversResponse.getMessage())
 			net_lock.Unlock()
 		} else {
@@ -97,11 +98,17 @@ func nonBlockingRead() {
 }
 
 func connectToServer(address string) {
-	conn, err := net.Dial("tcp", address)
+	var err error
+	fmt.Println("Address:", address)
+	conn, err = net.Dial("tcp", address)
 	checkError(err)
 
 	encoder = gob.NewEncoder(conn)
 	decoder = gob.NewDecoder(conn)
+
+	message := ClientMessage{Command: "initialMessage", Value: "Ragnar password"}
+	err = encoder.Encode(message)
+	checkError(err)
 }
 
 func printFormatedOutput(output []FormattedString) {
