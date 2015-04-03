@@ -60,13 +60,14 @@ func getInputFromUser() {
 			line, err := in.ReadString('\n')
 			checkError(err)
 			msg.setToSayMessage(line)
+		} else if input == "stats" {
+			msg.setToStatsMessage()
 		} else { //assume movement
 			msg.setToMovementMessage(input)
 		}
 		fmt.Println("Sending: ", msg)
 
 		net_lock.Lock()
-
 		err = encoder.Encode(msg)
 		checkError(err)
 		net_lock.Unlock()
@@ -114,7 +115,7 @@ func connectToServer(address string) {
 func printFormatedOutput(output []FormattedString) {
 	for _, element := range output {
 		ct.ChangeColor(element.Color, false, ct.Black, false)
-		fmt.Println(element.Value)
+		fmt.Print(element.Value)
 	}
 	ct.ResetColor()
 }

@@ -42,6 +42,12 @@ func ClientMessageConstructor(cmd string, val string) ClientMessage {
 	return ClientMessage{CombatAction: false, Command: cmd, Value: val}
 }
 
+func (msg *ClientMessage) setToStatsMessage() {
+	msg.CombatAction = false
+	msg.Command = "stats"
+	msg.Value = ""
+}
+
 func (msg *ClientMessage) setToMovementMessage(direction string) {
 	msg.CombatAction = false
 	msg.Command = "move"
