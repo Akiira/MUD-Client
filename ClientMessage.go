@@ -42,9 +42,9 @@ func ClientMessageConstructor(cmd string, val string) ClientMessage {
 	return ClientMessage{CombatAction: false, Command: cmd, Value: val}
 }
 
-func (msg *ClientMessage) setToStatsMessage() {
+func (msg *ClientMessage) setCommand(cmd string) {
 	msg.CombatAction = false
-	msg.Command = "stats"
+	msg.Command = cmd
 	msg.Value = ""
 }
 

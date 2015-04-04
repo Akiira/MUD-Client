@@ -15,10 +15,9 @@ var net_lock sync.Mutex
 var conn net.Conn
 var encoder *gob.Encoder
 var decoder *gob.Decoder
+var breakSignal bool
 
 func main() {
-
-	//logInTest()
 
 	runClient()
 
@@ -26,6 +25,7 @@ func main() {
 }
 
 func runClient() {
+	breakSignal = false
 	connectToServer("127.0.0.1:1200")
 
 	go nonBlockingRead()
@@ -61,7 +61,9 @@ func getInputFromUser() {
 			checkError(err)
 			msg.setToSayMessage(line)
 		} else if input == "stats" {
-			msg.setToStatsMessage()
+			msg.setCommand("stats")
+		} else if input == "inv" {
+			msg.setCommand("inv")
 		} else { //assume movement
 			msg.setToMovementMessage(input)
 		}
@@ -76,8 +78,7 @@ func getInputFromUser() {
 			break
 		}
 	}
-
-	os.Exit(0)
+	breakSignal = true
 }
 
 func nonBlockingRead() {
@@ -95,7 +96,13 @@ func nonBlockingRead() {
 		} else {
 			printFormatedOutput(serversResponse.Value)
 		}
+
+		if breakSignal {
+			break
+		}
 	}
+
+	os.Exit(0)
 }
 
 func connectToServer(address string) {
