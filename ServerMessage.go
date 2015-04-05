@@ -10,8 +10,8 @@ const (
 )
 
 type ServerMessage struct {
-	MsgType int
 	Value   []FormattedString
+	MsgType int
 }
 
 func newServerMessage(typeOfMsg int, msg string) ServerMessage {
