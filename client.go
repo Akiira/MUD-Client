@@ -36,7 +36,7 @@ func getInputFromUser() {
 	in := bufio.NewReader(os.Stdin)
 	for {
 		var msg ClientMessage
-		var input string
+		var input, target string
 		read, err := fmt.Scan(&input)
 		checkError(err)
 		_ = read
@@ -45,17 +45,15 @@ func getInputFromUser() {
 			msg.setToExitMessage()
 			break
 		} else if input == "attack" {
-			var target string
 			read, err = fmt.Scan(&target)
 			msg.setToAttackMessage(target)
 		} else if input == "look" {
-			var target string
 			read, err = fmt.Scan(&target)
 			msg.setToLookMessage(target)
 		} else if input == "get" {
-			var item string
-			read, err = fmt.Scan(&item)
-			msg.setToGetMessage(item)
+			var target string
+			read, err = fmt.Scan(&target)
+			msg.setToGetMessage(target)
 		} else if input == "say" {
 			line, err := in.ReadString('\n')
 			checkError(err)
@@ -64,8 +62,11 @@ func getInputFromUser() {
 			msg.setCommand("stats")
 		} else if input == "inv" {
 			msg.setCommand("inv")
+		} else if input == "bid" {
+			read, err = fmt.Scan(&target)
+			msg.setMsgWithTimestamp("bid", target)
 		} else { //assume movement
-			msg.setToMovementMessage(input)
+			msg.setToMovementMessage(input) //TODO add error handling code here
 		}
 		fmt.Println("Sending: ", msg)
 
@@ -92,6 +93,12 @@ func nonBlockingRead() {
 			err := conn.Close()
 			checkError(err)
 			connectToServer(serversResponse.getMessage())
+			net_lock.Unlock()
+		} else if serversResponse.MsgType == PING {
+			net_lock.Lock()
+			tmp := newClientMessage("ping", "")
+			err := encoder.Encode(&tmp)
+			checkError(err)
 			net_lock.Unlock()
 		} else {
 			printFormatedOutput(serversResponse.Value)
@@ -133,49 +140,3 @@ func checkError(err error) {
 		os.Exit(1)
 	}
 }
-
-//func logInTest() {
-//	service := "127.0.0.1:7200"
-
-//	for {
-
-//		conn, err := net.Dial("tcp", service)
-//		checkError(err)
-//		fmt.Println("established new connection")
-
-//		encoder := gob.NewEncoder(conn)
-//		decoder := gob.NewDecoder(conn)
-
-//		message := ClientMessage{Command: CommandLogin, Value: "Haplo password"}
-//		fmt.Println("Sending message")
-
-//		encoder.Encode(message)
-//		fmt.Println("message sent")
-
-//		var serversResponse ServerMessage
-//		fmt.Println("waiting for response")
-//		for {
-
-//			err := decoder.Decode(&serversResponse)
-//			if err != nil {
-//				fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
-//				os.Exit(1)
-//			} else {
-//				if !serversResponse.isError() {
-
-//					if serversResponse.getServerSystemMessageType() == CommandRedirectServer {
-//						service = serversResponse.getServerSystemMessageDetail()
-//						break
-//					} else if serversResponse.isError() {
-
-//						fmt.Println(serversResponse.getServerSystemMessageType())
-//						fmt.Println(serversResponse.getServerSystemMessageDetail())
-//						os.Exit(1)
-//					}
-//				}
-//			}
-
-//			conn.Close()
-//		}
-//	}
-//}
