@@ -114,7 +114,7 @@ func connectToServer(address string) {
 	encoder = gob.NewEncoder(conn)
 	decoder = gob.NewDecoder(conn)
 
-	message := ClientMessage{Command: "initialMessage", Value: "Ragnar password"}
+	message := ClientMessage{Command: "initialMessage", Value: "Tiefling password"}
 	err = encoder.Encode(message)
 	checkError(err)
 }
