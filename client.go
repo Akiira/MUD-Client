@@ -36,7 +36,7 @@ func getInputFromUser() {
 	in := bufio.NewReader(os.Stdin)
 	for {
 		var msg ClientMessage
-		var input string
+		var input, target string
 		read, err := fmt.Scan(&input)
 		checkError(err)
 		_ = read
@@ -45,17 +45,15 @@ func getInputFromUser() {
 			msg.setToExitMessage()
 			break
 		} else if input == "attack" {
-			var target string
 			read, err = fmt.Scan(&target)
 			msg.setToAttackMessage(target)
 		} else if input == "look" {
-			var target string
 			read, err = fmt.Scan(&target)
 			msg.setToLookMessage(target)
 		} else if input == "get" {
-			var item string
-			read, err = fmt.Scan(&item)
-			msg.setToGetMessage(item)
+			var target string
+			read, err = fmt.Scan(&target)
+			msg.setToGetMessage(target)
 		} else if input == "say" {
 			line, err := in.ReadString('\n')
 			checkError(err)
@@ -64,8 +62,11 @@ func getInputFromUser() {
 			msg.setCommand("stats")
 		} else if input == "inv" {
 			msg.setCommand("inv")
+		} else if input == "bid" {
+			read, err = fmt.Scan(&target)
+			msg.setMsgWithTimestamp("bid", target)
 		} else { //assume movement
-			msg.setToMovementMessage(input)
+			msg.setToMovementMessage(input) //TODO add error handling code here
 		}
 		fmt.Println("Sending: ", msg)
 
