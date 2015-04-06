@@ -5,32 +5,6 @@ import (
 	"strings"
 )
 
-////command for error
-//const ServerErrorMessage = "error"
-//const ErrorUnexpectedCommand = 201
-//const ErrorWorldIsNotFound = 202
-//const ErrorAuthorizationFail = 203
-
-////command for system
-//const CommandLogin = "Login"
-//const CommandLogout = 102
-//const CommandRedirectServer = "RedirectServer"
-//const CommandEnterWorld = 104
-//const CommandQueryCharacter = "QueryCharacter"
-//const CommandSaveCharacter = "SaveCharacter"
-
-////command for create user
-//const CommandRegister = 111
-
-////command in a room
-//const CommandAttack = 11
-//const CommandItem = 12
-//const CommandLeave = 13 // leave occur the same time with enter the room??
-
-////command between room?
-//const CommandJoinWorld = 21 // will change the room occur the same time with leave?
-//// probably use after authenticate with login server and move to the first world as well
-
 //this is suppose to be an event
 type ClientMessage struct {
 	CombatAction bool
@@ -38,7 +12,7 @@ type ClientMessage struct {
 	Value        string
 }
 
-func ClientMessageConstructor(cmd string, val string) ClientMessage {
+func newClientMessage(cmd string, val string) ClientMessage {
 	return ClientMessage{CombatAction: false, Command: cmd, Value: val}
 }
 
