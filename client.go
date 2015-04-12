@@ -8,6 +8,7 @@ import (
 	"github.com/daviddengcn/go-colortext"
 	"net"
 	"os"
+	"strings"
 	"sync"
 )
 
@@ -26,7 +27,7 @@ func main() {
 
 func runClient() {
 	breakSignal = false
-	connectToServer("127.0.0.1:1200")
+	connectToServer("127.0.0.1:1200") //TODO remove hard coding
 
 	go nonBlockingRead()
 	getInputFromUser()
@@ -55,8 +56,8 @@ func getInputFromUser() {
 			read, err = fmt.Scan(&target)
 			msg.setToGetMessage(target)
 		} else if input == "say" {
-			line, err := in.ReadString('\n')
-			checkError(err)
+			line, _ := in.ReadString('\n')
+			line = strings.TrimRight(line, "\n")
 			msg.setToSayMessage(line)
 		} else if input == "stats" {
 			msg.setCommand("stats")
@@ -65,6 +66,10 @@ func getInputFromUser() {
 		} else if input == "bid" {
 			read, err = fmt.Scan(&target)
 			msg.setMsgWithTimestamp("bid", target)
+		} else if input == "auction" {
+			line, _ := in.ReadString('\n')
+			line = strings.TrimRight(line, "\n")
+			msg.setCommandAndValue("auction", line)
 		} else { //assume movement
 			msg.setToMovementMessage(input) //TODO add error handling code here
 		}

@@ -23,6 +23,12 @@ func (msg *ClientMessage) setCommand(cmd string) {
 	msg.Value = ""
 }
 
+func (msg *ClientMessage) setCommandAndValue(cmd string, val string) {
+	msg.CombatAction = false
+	msg.Command = cmd
+	msg.Value = val
+}
+
 func (msg *ClientMessage) setCommandWithTimestamp(cmd string) {
 	msg.CombatAction = false
 	msg.Command = cmd + ";" + time.Now().String()
