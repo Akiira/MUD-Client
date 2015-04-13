@@ -28,7 +28,7 @@ func main() {
 func runClient() {
 	breakSignal = false
 	connectToServer("127.0.0.1:1200") //TODO remove hard coding
-
+	go startPingServer()
 	go nonBlockingRead()
 	getInputFromUser()
 }
@@ -45,28 +45,37 @@ func startPingServer() {
 		pingDec := gob.NewDecoder(conn)
 
 		for {
+
 			var msg ServerMessage
 
-			pingDec.Decode(&msg)
-			pingEnc.Encode(newClientMessage("ping", ""))
-
+			err := pingDec.Decode(&msg)
+			checkError(err)
+			fmt.Println("\tPing received.")
 			if msg.getMessage() == "done" {
+				fmt.Println("Done pinging.")
 				break
 			}
+
+			err = pingEnc.Encode(&ClientMessage{})
+			checkError(err)
 		}
+
+		conn.Close()
 
 		if breakSignal {
 			break
 		}
 	}
 }
+
 func setUpServerWithAddress(addr string) *net.TCPListener {
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", addr)
-	checkError(err, true)
+	checkError(err)
 	listener, err := net.ListenTCP("tcp", tcpAddr)
-	checkError(err, true)
+	checkError(err)
 	return listener
 }
+
 func getInputFromUser() {
 	in := bufio.NewReader(os.Stdin)
 	for {
@@ -125,7 +134,6 @@ func nonBlockingRead() {
 	for {
 		var serversResponse ServerMessage
 		err := decoder.Decode(&serversResponse)
-		fmt.Println("\tRaw message from server: ", serversResponse)
 		checkError(err)
 
 		if serversResponse.MsgType == REDIRECT {
@@ -133,14 +141,6 @@ func nonBlockingRead() {
 			err := conn.Close()
 			checkError(err)
 			connectToServer(serversResponse.getMessage())
-			net_lock.Unlock()
-		} else if serversResponse.MsgType == PING {
-			fmt.Println("\tReceived ping from server.")
-			net_lock.Lock()
-			tmp := newClientMessage("ping", "")
-			err := encoder.Encode(&tmp)
-			fmt.Println("\tSent ping back to the server.")
-			checkError(err)
 			net_lock.Unlock()
 		} else {
 			printFormatedOutput(serversResponse.Value)
@@ -163,7 +163,7 @@ func connectToServer(address string) {
 	encoder = gob.NewEncoder(conn)
 	decoder = gob.NewDecoder(conn)
 
-	message := ClientMessage{Command: "initialMessage", Value: "Tiefling password"}
+	message := ClientMessage{Command: "initialMessage", Value: "Tiefling password"} //TODO get this from user
 	err = encoder.Encode(message)
 	checkError(err)
 }
