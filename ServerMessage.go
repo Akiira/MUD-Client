@@ -2,6 +2,8 @@
 package main
 
 import (
+	"fmt"
+	"github.com/daviddengcn/go-colortext"
 	"strings"
 )
 
@@ -14,8 +16,16 @@ const (
 )
 
 type ServerMessage struct {
-	Value   []FormattedString
-	MsgType int
+	Value    []FormattedString
+	MsgType  int
+	CharInfo CharacterInfo
+}
+
+type CharacterInfo struct {
+	Name      string
+	CurrentHP int
+	MaxHP     int
+	Exp       int
 }
 
 func newServerMessageFS(msgs []FormattedString) ServerMessage {
@@ -32,6 +42,25 @@ func newServerMessageTypeFS(typeOfMsg int, msgs []FormattedString) ServerMessage
 
 func newServerMessageTypeS(typeOfMsg int, msg string) ServerMessage {
 	return ServerMessage{MsgType: typeOfMsg, Value: newFormattedStringSplice(msg)}
+}
+
+func (msg *ServerMessage) getFormattedCharInfo() []FormattedString {
+	fs := newFormattedStringCollection()
+	fs.addMessage(ct.Red, fmt.Sprintf("\n%d/%d", msg.getCurrentHP(), msg.getMaxHP()))
+	fs.addMessage2("|")
+	fs.addMessage(ct.Green, fmt.Sprintf("%d", msg.CharInfo.Exp))
+	fs.addMessage2("|")
+	fs.addMessage(ct.Blue, msg.CharInfo.Name)
+	fs.addMessage2("> ")
+	return fs.fmtedStrings
+}
+
+func (msg *ServerMessage) getCurrentHP() int {
+	return msg.CharInfo.CurrentHP
+}
+
+func (msg *ServerMessage) getMaxHP() int {
+	return msg.CharInfo.MaxHP
 }
 
 func (msg *ServerMessage) getMessage() string {
