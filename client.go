@@ -30,7 +30,8 @@ func runClient() {
 	connectToServer("127.0.0.1:1200") //TODO remove hard coding
 	go startPingServer()
 	go nonBlockingRead()
-	getInputFromUser()
+	//OldGetInputFromUser()
+	NewGetInputFromUser()
 }
 
 func startPingServer() {
@@ -76,7 +77,7 @@ func setUpServerWithAddress(addr string) *net.TCPListener {
 	return listener
 }
 
-func getInputFromUser() {
+func OldGetInputFromUser() {
 	in := bufio.NewReader(os.Stdin)
 	for {
 		var msg ClientMessage
@@ -100,7 +101,7 @@ func getInputFromUser() {
 			msg.setToGetMessage(target)
 		} else if input == "say" {
 			line, _ := in.ReadString('\n')
-			line = strings.TrimRight(line, "\n")
+			line = strings.TrimSpace(line)
 			msg.setToSayMessage(line)
 		} else if input == "stats" {
 			msg.setCommand("stats")
@@ -152,6 +153,114 @@ func nonBlockingRead() {
 	}
 
 	os.Exit(0)
+}
+
+func NewGetInputFromUser() {
+	in := bufio.NewReader(os.Stdin)
+	for {
+		var msg ClientMessage
+		var input string
+
+		_, err := fmt.Scan(&input)
+		checkError(err)
+		input = strings.TrimSpace(input)
+
+		line, err := in.ReadString('\n')
+		checkError(err)
+		line = strings.TrimSpace(line)
+
+		if isCombatCommand(input) { //TODO make this if-chain a little smaller
+			msg = newClientMessage2(isCombatCommand(input), input, line)
+		} else if isValidDirection(input) {
+			msg = newClientMessage("move", input)
+		} else if isNonCombatCommand(input) {
+			msg = newClientMessage(input, line)
+		} else {
+			fmt.Println("\nThat does not appear to be a valid command.\n")
+			continue
+		}
+
+		net_lock.Lock()
+		fmt.Println("Sending: ", msg)
+		err = encoder.Encode(msg)
+		checkError(err)
+		net_lock.Unlock()
+
+		if input == "exit" {
+			break
+		}
+	}
+	breakSignal = true
+}
+
+//TODO consider putting this in a file, and then loading them into a hashmap instead
+func isLegalCommand(cmd string) bool {
+	return isCombatCommand(cmd) || isNonCombatCommand(cmd)
+}
+
+func isNonCombatCommand(cmd string) bool {
+	switch {
+	case cmd == "auction" || cmd == "bid":
+		return true
+	case cmd == "wield" || cmd == "unwield":
+		return true
+	case cmd == "equip" || cmd == "unequip":
+		return true
+	case cmd == "inv":
+		return true
+	case cmd == "save" || cmd == "exit":
+		return true
+	case cmd == "stats":
+		return true
+	case cmd == "look":
+		return true
+	case cmd == "get" || cmd == "put" || cmd == "drop":
+		return true
+	case cmd == "move":
+		return true
+	case cmd == "say" || cmd == "yell":
+		return true
+	}
+	return isValidDirection(cmd)
+}
+
+func isCombatCommand(cmd string) bool {
+	switch {
+	case cmd == "attack":
+		return true
+	case cmd == "cast":
+		return true
+	}
+
+	return false
+}
+
+func isValidDirection(direction string) bool {
+
+	switch strings.ToLower(direction) {
+	case "n", "n\r\n", "n\n", "north":
+		return true
+	case "s", "s\r\n", "s\n", "south":
+		return true
+	case "e", "e\r\n", "e\n", "east":
+		return true
+	case "w", "w\r\n", "w\n", "west":
+		return true
+	case "nw", "nw\r\n", "nw\n", "northwest":
+		return true
+	case "ne", "ne\r\n", "ne\n", "northeast":
+		return true
+	case "sw", "sw\r\n", "sw\n", "southwest":
+		return true
+	case "se", "se\r\n", "se\n", "southeast":
+		return true
+	case "u", "u\r\n", "u\n", "up":
+		return true
+	case "d", "d\r\n", "d\n", "down":
+		return true
+	}
+
+	return false
 }
 
 func connectToServer(address string) {
