@@ -30,7 +30,6 @@ func runClient() {
 	connectToServer("127.0.0.1:1200") //TODO remove hard coding
 	go startPingServer()
 	go nonBlockingRead()
-	//OldGetInputFromUser()
 	NewGetInputFromUser()
 }
 
@@ -77,60 +76,6 @@ func setUpServerWithAddress(addr string) *net.TCPListener {
 	return listener
 }
 
-func OldGetInputFromUser() {
-	in := bufio.NewReader(os.Stdin)
-	for {
-		var msg ClientMessage
-		var input, target string
-		read, err := fmt.Scan(&input)
-		checkError(err)
-		_ = read
-
-		if input == "exit" {
-			msg.setToExitMessage()
-			break
-		} else if input == "attack" {
-			read, err = fmt.Scan(&target)
-			msg.setToAttackMessage(target)
-		} else if input == "look" {
-			read, err = fmt.Scan(&target)
-			msg.setToLookMessage(target)
-		} else if input == "get" {
-			var target string
-			read, err = fmt.Scan(&target)
-			msg.setToGetMessage(target)
-		} else if input == "say" {
-			line, _ := in.ReadString('\n')
-			line = strings.TrimSpace(line)
-			msg.setToSayMessage(line)
-		} else if input == "stats" {
-			msg.setCommand("stats")
-		} else if input == "inv" {
-			msg.setCommand("inv")
-		} else if input == "bid" {
-			read, err = fmt.Scan(&target)
-			msg.setMsgWithTimestamp("bid", target)
-		} else if input == "auction" {
-			line, _ := in.ReadString('\n')
-			line = strings.TrimSpace(line)
-			msg.setCommandAndValue("auction", line)
-		} else { //assume movement
-			msg.setToMovementMessage(input) //TODO add error handling code here
-		}
-		fmt.Println("Sending: ", msg)
-
-		net_lock.Lock()
-		err = encoder.Encode(msg)
-		checkError(err)
-		net_lock.Unlock()
-
-		if msg.Command == "exit" {
-			break
-		}
-	}
-	breakSignal = true
-}
-
 func nonBlockingRead() {
 	for {
 		var serversResponse ServerMessage
@@ -167,15 +112,15 @@ func NewGetInputFromUser() {
 		checkError(err)
 		input = strings.TrimSpace(input)
 
-		line, err := in.ReadString('\n')
-		checkError(err)
-		line = strings.TrimSpace(line)
-
-		if isCombatCommand(input) { //TODO make this if-chain a little smaller
-			msg = newClientMessage2(isCombatCommand(input), input, line)
-		} else if isValidDirection(input) {
+		if isValidDirection(input) {
 			msg = newClientMessage("move", input)
+		} else if isCombatCommand(input) {
+			line, _ := in.ReadString('\n')
+			line = strings.TrimSpace(line)
+			msg = newClientMessage2(isCombatCommand(input), input, line)
 		} else if isNonCombatCommand(input) {
+			line, _ := in.ReadString('\n')
+			line = strings.TrimSpace(line)
 			msg = newClientMessage(input, line)
 		} else {
 			fmt.Println("\nThat does not appear to be a valid command.\n")
