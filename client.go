@@ -167,6 +167,8 @@ func isNonCombatCommand(cmd string) bool {
 		return true
 	case cmd == "say" || cmd == "yell":
 		return true
+	case cmd == "trade":
+		return true
 	}
 	return isValidDirection(cmd)
 }
