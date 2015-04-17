@@ -80,7 +80,7 @@ func nonBlockingRead() {
 	for {
 		var serversResponse ServerMessage
 		err := decoder.Decode(&serversResponse)
-		fmt.Println("\tRead message from server.", serversResponse)
+		//fmt.Println("\tRead message from server.", serversResponse)
 		checkError(err)
 
 		if serversResponse.MsgType == REDIRECT {
@@ -168,6 +168,10 @@ func isNonCombatCommand(cmd string) bool {
 	case cmd == "say" || cmd == "yell":
 		return true
 	case cmd == "trade":
+		return true
+	case cmd == "select":
+		return true
+	case cmd == "reject":
 		return true
 	}
 	return isValidDirection(cmd)
