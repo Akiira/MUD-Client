@@ -20,6 +20,7 @@ var breakSignal bool
 var username string
 var pass string
 var serverAddr string
+var cacheCharInfo []FormattedString
 
 //var server
 
@@ -112,6 +113,7 @@ func nonBlockingRead() {
 		} else {
 			printFormatedOutput(serversResponse.Value)
 			printFormatedOutput(serversResponse.getFormattedCharInfo())
+			cacheCharInfo = serversResponse.getFormattedCharInfo()
 		}
 
 		if breakSignal {
@@ -144,6 +146,7 @@ func NewGetInputFromUser() {
 			msg = newClientMessage(input, line)
 		} else {
 			fmt.Println("\nThat does not appear to be a valid command.\n")
+			printFormatedOutput(cacheCharInfo)
 			continue
 		}
 
