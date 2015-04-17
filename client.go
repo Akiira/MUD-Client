@@ -19,25 +19,36 @@ var decoder *gob.Decoder
 var breakSignal bool
 var username string
 var pass string
+var serverAddr string
+
+//var server
 
 func main() {
 
-	fmt.Println("enter your username")
-	fmt.Scan(&username)
-	fmt.Println("enter your password")
-	fmt.Scan(&pass)
+	readConfigFile()
+
 	runClient()
 
 	os.Exit(0)
 }
 
+func readConfigFile() {
+	readPassFile, err := os.Open("login.txt")
+	checkError(err)
+
+	reader := bufio.NewReader(readPassFile)
+	line, _, err := reader.ReadLine()
+	username = string(line)
+	line, _, err = reader.ReadLine()
+	pass = string(line)
+	line, _, err = reader.ReadLine()
+	serverAddr = string(line)
+}
+
 func runClient() {
 	breakSignal = false
-	var serverAddr string
-	fmt.Println("enter server address")
-	fmt.Scan(&serverAddr)
 	connectToServer(serverAddr) //TODO remove hard coding
-	go startPingServer()
+	//go startPingServer()
 	go nonBlockingRead()
 	NewGetInputFromUser()
 }
