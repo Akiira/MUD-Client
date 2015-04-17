@@ -140,7 +140,7 @@ func NewGetInputFromUser() {
 	breakSignal = true
 }
 
-//TODO consider putting this in a file, and then loading them into a hashmap instead
+//TODO consider putting the commands in a file, and then loading them into a hashmap instead
 func isLegalCommand(cmd string) bool {
 	return isCombatCommand(cmd) || isNonCombatCommand(cmd)
 }
@@ -166,6 +166,8 @@ func isNonCombatCommand(cmd string) bool {
 	case cmd == "move":
 		return true
 	case cmd == "say" || cmd == "yell":
+		return true
+	case cmd == "trade":
 		return true
 	}
 	return isValidDirection(cmd)
