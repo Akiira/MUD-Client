@@ -17,9 +17,15 @@ var conn net.Conn
 var encoder *gob.Encoder
 var decoder *gob.Decoder
 var breakSignal bool
+var username string
+var pass string
 
 func main() {
 
+	fmt.Println("enter your username")
+	fmt.Scan(&username)
+	fmt.Println("enter your password")
+	fmt.Scan(&pass)
 	runClient()
 
 	os.Exit(0)
@@ -27,7 +33,10 @@ func main() {
 
 func runClient() {
 	breakSignal = false
-	connectToServer("127.0.0.1:1200") //TODO remove hard coding
+	var serverAddr string
+	fmt.Println("enter server address")
+	fmt.Scan(&serverAddr)
+	connectToServer(serverAddr) //TODO remove hard coding
 	go startPingServer()
 	go nonBlockingRead()
 	NewGetInputFromUser()
@@ -173,6 +182,8 @@ func isNonCombatCommand(cmd string) bool {
 		return true
 	case cmd == "reject":
 		return true
+	case cmd == "accept":
+		return true
 	}
 	return isValidDirection(cmd)
 }
@@ -226,7 +237,7 @@ func connectToServer(address string) {
 	encoder = gob.NewEncoder(conn)
 	decoder = gob.NewDecoder(conn)
 
-	message := ClientMessage{Command: "initialMessage", Value: "Tiefling password"} //TODO get this from user
+	message := ClientMessage{Command: "initialMessage", Value: username + " " + pass} //TODO get this from user
 	err = encoder.Encode(&message)
 	fmt.Println("\tMessage Sent")
 	checkError(err)
