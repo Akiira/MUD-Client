@@ -48,7 +48,7 @@ func readConfigFile() {
 func runClient() {
 	breakSignal = false
 	connectToServer(serverAddr) //TODO remove hard coding
-	//go startPingServer()
+	go startPingServer()
 	go nonBlockingRead()
 	NewGetInputFromUser()
 }
@@ -194,6 +194,8 @@ func isNonCombatCommand(cmd string) bool {
 	case cmd == "reject":
 		return true
 	case cmd == "accept":
+		return true
+	case cmd == "help":
 		return true
 	}
 	return isValidDirection(cmd)
