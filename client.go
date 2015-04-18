@@ -28,9 +28,9 @@ func main() {
 func runClient() {
 	breakSignal = false
 	connectToServer("127.0.0.1:1200") //TODO remove hard coding
-	go startPingServer()
+	//go startPingServer()
 	go nonBlockingRead()
-	NewGetInputFromUser()
+	GetInputFromUser()
 }
 
 func startPingServer() {
@@ -50,9 +50,8 @@ func startPingServer() {
 
 			err := pingDec.Decode(&msg)
 			checkError(err)
-			fmt.Println("\tPing received.")
+
 			if msg.getMessage() == "done" {
-				fmt.Println("Done pinging.")
 				break
 			}
 
@@ -80,7 +79,6 @@ func nonBlockingRead() {
 	for {
 		var serversResponse ServerMessage
 		err := decoder.Decode(&serversResponse)
-		fmt.Println("\tRead message from server.", serversResponse)
 		checkError(err)
 
 		if serversResponse.MsgType == REDIRECT {
@@ -102,7 +100,7 @@ func nonBlockingRead() {
 	os.Exit(0)
 }
 
-func NewGetInputFromUser() {
+func GetInputFromUser() {
 	in := bufio.NewReader(os.Stdin)
 	for {
 		var msg ClientMessage
@@ -114,6 +112,8 @@ func NewGetInputFromUser() {
 
 		if isValidDirection(input) {
 			msg = newClientMessage("move", input)
+		} else if input == "accept" || input == "done" {
+			msg = newClientMessage(input, input)
 		} else if isCombatCommand(input) {
 			line, _ := in.ReadString('\n')
 			line = strings.TrimSpace(line)
@@ -169,6 +169,12 @@ func isNonCombatCommand(cmd string) bool {
 		return true
 	case cmd == "trade":
 		return true
+	case cmd == "opentrade":
+		return true
+	case cmd == "add":
+		return true
+	case cmd == "accept":
+		return true
 	}
 	return isValidDirection(cmd)
 }
@@ -214,7 +220,7 @@ func isValidDirection(direction string) bool {
 
 func connectToServer(address string) {
 	var err error
-	fmt.Println("\tAddress:", address)
+	fmt.Println("\tAddress: ", address)
 	conn, err = net.Dial("tcp", address)
 	fmt.Println("\tFinished dialing.")
 	checkError(err)
@@ -222,7 +228,7 @@ func connectToServer(address string) {
 	encoder = gob.NewEncoder(conn)
 	decoder = gob.NewDecoder(conn)
 
-	message := ClientMessage{Command: "initialMessage", Value: "Tiefling password"} //TODO get this from user
+	message := ClientMessage{Command: "initialMessage", Value: os.Args[1] + " password"} //TODO get this from user
 	err = encoder.Encode(&message)
 	fmt.Println("\tMessage Sent")
 	checkError(err)
