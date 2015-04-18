@@ -86,8 +86,7 @@ func LogInAndPlay() {
 	_, err = fmt.Scan(&password)
 	checkError(err)
 
-	message := ClientMessage{Command: "initialMessage", Value: username + " " + password}
-	err = encoder.Encode(&message)
+	err = encoder.Encode(&ClientMessage{Command: "initialMessage", Value: username + " " + password})
 	checkError(err)
 
 	loggedIn = true
@@ -109,7 +108,7 @@ func ReadFromServer() {
 			connectToServer(serversResponse.getMessage())
 			net_lock.Unlock()
 		} else if serversResponse.MsgType == PING {
-			encoder.Encode(newClientMessage("ping", ""))
+			encoder.Encode(newClientMessage("ping", "ping"))
 		} else {
 			printFormatedOutput(serversResponse.Value)
 			printFormatedOutput(serversResponse.getFormattedCharInfo())
@@ -134,7 +133,7 @@ func GetInputFromUser() {
 
 		if isValidDirection(input) {
 			msg = newClientMessage("move", input)
-		} else if input == "accept" || input == "done" {
+		} else if isOneWordCommand(input) {
 			msg = newClientMessage(input, input)
 		} else if isCombatCommand(input) {
 			line, _ := in.ReadString('\n')
@@ -160,6 +159,16 @@ func GetInputFromUser() {
 		}
 	}
 	breakSignal = true
+}
+
+func isOneWordCommand(cmd string) bool {
+	switch cmd {
+	case "accept", "done":
+		return true
+	case "equipment":
+		return true
+	}
+	return false
 }
 
 //TODO consider putting the commands in a file, and then loading them into a hashmap instead
@@ -241,7 +250,7 @@ func isValidDirection(direction string) bool {
 }
 
 func connectToServer(address string) {
-	var err error
+	var err error //Dont remove me
 
 	fmt.Println("\tAddress: ", address)
 	conn, err = net.Dial("tcp", address)
