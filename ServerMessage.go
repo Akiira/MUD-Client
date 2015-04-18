@@ -4,7 +4,6 @@ package main
 import (
 	"fmt"
 	"github.com/daviddengcn/go-colortext"
-	"strings"
 )
 
 const (
@@ -13,6 +12,7 @@ const (
 	SAVEFILE = 3
 	GAMEPLAY = 4
 	PING     = 5
+	EXIT     = 6
 )
 
 type ServerMessage struct {
@@ -44,6 +44,26 @@ func newServerMessageTypeS(typeOfMsg int, msg string) ServerMessage {
 	return ServerMessage{MsgType: typeOfMsg, Value: newFormattedStringSplice(msg)}
 }
 
+func NewRedirectMsgS(msg string) ServerMessage {
+	return ServerMessage{MsgType: REDIRECT, Value: newFormattedStringSplice(msg)}
+}
+
+func NewMessageWithStats(stats []int) ServerMessage {
+	fsc := newFormattedStringCollection()
+
+	fsc.addMessage(ct.Green, "Stats\n-----------------------------------------\n")
+	fsc.addMessage2(fmt.Sprintf("\tStrength: %2d\n", stats[0]))
+	fsc.addMessage2(fmt.Sprintf("\tConstitution: %2d\n", stats[1]))
+	fsc.addMessage2(fmt.Sprintf("\tDexterity: %2d\n", stats[2]))
+	fsc.addMessage2(fmt.Sprintf("\tWisdom: %2d\n", stats[3]))
+	fsc.addMessage2(fmt.Sprintf("\tCharisma: %2d\n", stats[4]))
+	fsc.addMessage2(fmt.Sprintf("\tInteligence: %2d\n", stats[5]))
+
+	fsc.addMessage(ct.Green, "\nType 'reroll' to get new stats or 'keep' to continue.\n")
+
+	return newServerMessageFS(fsc.fmtedStrings)
+}
+
 func (msg *ServerMessage) getFormattedCharInfo() []FormattedString {
 	fs := newFormattedStringCollection()
 	fs.addMessage(ct.Red, fmt.Sprintf("\n%d/%d", msg.getCurrentHP(), msg.getMaxHP()))
@@ -68,12 +88,4 @@ func (msg *ServerMessage) getMessage() string {
 		return ""
 	}
 	return msg.Value[0].Value
-}
-
-func (msg *ServerMessage) isError() bool {
-	if len(msg.Value) == 0 {
-		return false
-	}
-
-	return (strings.Split(msg.Value[0].Value, " ")[0] == "error")
 }

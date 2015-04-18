@@ -12,11 +12,16 @@ import (
 	"sync"
 )
 
-var net_lock sync.Mutex
-var conn net.Conn
-var encoder *gob.Encoder
-var decoder *gob.Decoder
-var breakSignal bool
+var (
+	net_lock    sync.Mutex
+	conn        net.Conn
+	encoder     *gob.Encoder
+	decoder     *gob.Decoder
+	breakSignal bool
+	username    string
+	password    string
+	loggedIn    bool
+)
 
 func main() {
 
@@ -27,9 +32,67 @@ func main() {
 
 func runClient() {
 	breakSignal = false
+
+	choice := Start()
+
+	if choice == "new" {
+		CreateNewCharacter()
+		LogInAndPlay()
+	} else if choice == "login" {
+		LogInAndPlay()
+	} else {
+		fmt.Println("That was not a recognized command, goodbye.")
+	}
+}
+
+func Start() (choice string) {
+	fmt.Println("Hail travaler. Would you like to create a new adventerer or login in with an old one?")
+	fmt.Println("Type 'new' or 'login'")
+	fmt.Scanln(&choice)
+
+	return choice
+}
+
+func CreateNewCharacter() {
+	connectToServer("127.0.0.1:1202")
+	go ReadFromServer()
+
+	for {
+		var input string
+		fmt.Scan(&input)
+		encoder.Encode(newClientMessage("", input))
+
+		if input == "done" { //TODO make this better
+			break
+		}
+	}
+
+	for { //TODO make this better
+		if breakSignal {
+			break
+		}
+	}
+
+	breakSignal = false
+}
+
+func LogInAndPlay() {
 	connectToServer("127.0.0.1:1200") //TODO remove hard coding
-	//go startPingServer()
-	go nonBlockingRead()
+
+	fmt.Println("Please enter you adventuers name.")
+	_, err := fmt.Scan(&username)
+	checkError(err)
+	fmt.Println("Please enter your password.")
+	_, err = fmt.Scan(&password)
+	checkError(err)
+
+	message := ClientMessage{Command: "initialMessage", Value: username + " " + password}
+	err = encoder.Encode(&message)
+	checkError(err)
+
+	loggedIn = true
+
+	go ReadFromServer()
 	GetInputFromUser()
 }
 
@@ -75,7 +138,7 @@ func setUpServerWithAddress(addr string) *net.TCPListener {
 	return listener
 }
 
-func nonBlockingRead() {
+func ReadFromServer() {
 	for {
 		var serversResponse ServerMessage
 		err := decoder.Decode(&serversResponse)
@@ -92,12 +155,11 @@ func nonBlockingRead() {
 			printFormatedOutput(serversResponse.getFormattedCharInfo())
 		}
 
-		if breakSignal {
+		if breakSignal || serversResponse.MsgType == EXIT {
+			breakSignal = true
 			break
 		}
 	}
-
-	os.Exit(0)
 }
 
 func GetInputFromUser() {
@@ -220,6 +282,7 @@ func isValidDirection(direction string) bool {
 
 func connectToServer(address string) {
 	var err error
+
 	fmt.Println("\tAddress: ", address)
 	conn, err = net.Dial("tcp", address)
 	fmt.Println("\tFinished dialing.")
@@ -228,10 +291,9 @@ func connectToServer(address string) {
 	encoder = gob.NewEncoder(conn)
 	decoder = gob.NewDecoder(conn)
 
-	message := ClientMessage{Command: "initialMessage", Value: os.Args[1] + " password"} //TODO get this from user
-	err = encoder.Encode(&message)
-	fmt.Println("\tMessage Sent")
-	checkError(err)
+	if loggedIn {
+		encoder.Encode(newClientMessage("initialMessage", username+" "+password))
+	}
 }
 
 func printFormatedOutput(output []FormattedString) {
