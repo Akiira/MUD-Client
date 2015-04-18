@@ -96,48 +96,6 @@ func LogInAndPlay() {
 	GetInputFromUser()
 }
 
-func startPingServer() {
-
-	listerner := setUpServerWithAddress(":1600")
-
-	for {
-		conn, err := listerner.Accept()
-		checkError(err)
-
-		pingEnc := gob.NewEncoder(conn)
-		pingDec := gob.NewDecoder(conn)
-
-		for {
-
-			var msg ServerMessage
-
-			err := pingDec.Decode(&msg)
-			checkError(err)
-
-			if msg.getMessage() == "done" {
-				break
-			}
-
-			err = pingEnc.Encode(&ClientMessage{})
-			checkError(err)
-		}
-
-		conn.Close()
-
-		if breakSignal {
-			break
-		}
-	}
-}
-
-func setUpServerWithAddress(addr string) *net.TCPListener {
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", addr)
-	checkError(err)
-	listener, err := net.ListenTCP("tcp", tcpAddr)
-	checkError(err)
-	return listener
-}
-
 func ReadFromServer() {
 	for {
 		var serversResponse ServerMessage
