@@ -108,6 +108,8 @@ func ReadFromServer() {
 			checkError(err)
 			connectToServer(serversResponse.getMessage())
 			net_lock.Unlock()
+		} else if serversResponse.MsgType == PING {
+			encoder.Encode(newClientMessage("ping", ""))
 		} else {
 			printFormatedOutput(serversResponse.Value)
 			printFormatedOutput(serversResponse.getFormattedCharInfo())
