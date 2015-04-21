@@ -17,17 +17,38 @@ var conn net.Conn
 var encoder *gob.Encoder
 var decoder *gob.Decoder
 var breakSignal bool
+var username string
+var pass string
+var serverAddr string
+var cacheCharInfo []FormattedString
+
+//var server
 
 func main() {
+
+	readConfigFile()
 
 	runClient()
 
 	os.Exit(0)
 }
 
+func readConfigFile() {
+	readPassFile, err := os.Open("login.txt")
+	checkError(err)
+
+	reader := bufio.NewReader(readPassFile)
+	line, _, err := reader.ReadLine()
+	username = string(line)
+	line, _, err = reader.ReadLine()
+	pass = string(line)
+	line, _, err = reader.ReadLine()
+	serverAddr = string(line)
+}
+
 func runClient() {
 	breakSignal = false
-	connectToServer("127.0.0.1:1200") //TODO remove hard coding
+	connectToServer(serverAddr) //TODO remove hard coding
 	go startPingServer()
 	go nonBlockingRead()
 	NewGetInputFromUser()
@@ -80,7 +101,7 @@ func nonBlockingRead() {
 	for {
 		var serversResponse ServerMessage
 		err := decoder.Decode(&serversResponse)
-		fmt.Println("\tRead message from server.", serversResponse)
+		//fmt.Println("\tRead message from server.", serversResponse)
 		checkError(err)
 
 		if serversResponse.MsgType == REDIRECT {
@@ -92,6 +113,7 @@ func nonBlockingRead() {
 		} else {
 			printFormatedOutput(serversResponse.Value)
 			printFormatedOutput(serversResponse.getFormattedCharInfo())
+			cacheCharInfo = serversResponse.getFormattedCharInfo()
 		}
 
 		if breakSignal {
@@ -124,6 +146,7 @@ func NewGetInputFromUser() {
 			msg = newClientMessage(input, line)
 		} else {
 			fmt.Println("\nThat does not appear to be a valid command.\n")
+			printFormatedOutput(cacheCharInfo)
 			continue
 		}
 
@@ -169,6 +192,15 @@ func isNonCombatCommand(cmd string) bool {
 		return true
 	case cmd == "trade":
 		return true
+	case cmd == "select":
+		return true
+	case cmd == "reject":
+		return true
+	case cmd == "accept":
+		return true
+	case cmd == "help":
+		return true
+
 	}
 	return isValidDirection(cmd)
 }
@@ -222,7 +254,7 @@ func connectToServer(address string) {
 	encoder = gob.NewEncoder(conn)
 	decoder = gob.NewDecoder(conn)
 
-	message := ClientMessage{Command: "initialMessage", Value: "Tiefling password"} //TODO get this from user
+	message := ClientMessage{Command: "initialMessage", Value: username + " " + pass} //TODO get this from user
 	err = encoder.Encode(&message)
 	fmt.Println("\tMessage Sent")
 	checkError(err)
