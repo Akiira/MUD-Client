@@ -13,6 +13,7 @@ import (
 )
 
 var (
+	servers     map[string]string = make(map[string]string)
 	net_lock    sync.Mutex
 	conn        net.Conn
 	encoder     *gob.Encoder
@@ -24,10 +25,29 @@ var (
 )
 
 func main() {
-
+	readServerList()
 	runClient()
 
 	os.Exit(0)
+}
+
+func readServerList() {
+	file, err := os.Open("serverList.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		readData := strings.Fields(scanner.Text())
+		fmt.Println(readData)
+		servers[readData[0]] = readData[1]
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func runClient() {
@@ -54,7 +74,7 @@ func Start() (choice string) {
 }
 
 func CreateNewCharacter() {
-	connectToServer("127.0.0.1:1202")
+	connectToServer(servers["newChar"])
 	go ReadFromServer()
 
 	for {
@@ -77,7 +97,8 @@ func CreateNewCharacter() {
 }
 
 func LogInAndPlay() {
-	connectToServer("127.0.0.1:1200") //TODO remove hard coding
+
+	connectToServer(servers["central"])
 
 	fmt.Println("Please enter you adventuers name.")
 	_, err := fmt.Scan(&username)
