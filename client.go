@@ -6,6 +6,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"github.com/daviddengcn/go-colortext"
+	"log"
 	"net"
 	"os"
 	"strings"
