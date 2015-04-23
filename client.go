@@ -189,9 +189,9 @@ func isOneWordCommand(cmd string) bool {
 		return true
 	case "equipment", "eq":
 		return true
-	case "stats":
+	case "stats", "save", "exit":
 		return true
-	case "look":
+	case "look", "level", "lvl":
 		return true
 	}
 	return false
@@ -206,9 +206,9 @@ func isNonCombatCommand(cmd string) bool {
 	switch cmd {
 	case "auction", "bid":
 		return true
-	case "wield", "unwield":
+	case "wield", "unwield", "wi", "uw":
 		return true
-	case "equip", "unequip", "wear", "remove":
+	case "equip", "unequip", "wear", "we", "remove", "rm":
 		return true
 	case "inv", "inventory", "eq", "equipment":
 		return true
@@ -218,15 +218,15 @@ func isNonCombatCommand(cmd string) bool {
 		return true
 	case "look":
 		return true
-	case "get", "put", "drop":
+	case "level", "lvl":
+		return true
+	case "get", "g", "put", "p", "drop", "d":
 		return true
 	case "move", "flee":
 		return true
 	case "say", "yell":
 		return true
-	case "trade", "opentrade", "add":
-		return true
-	case "accept":
+	case "trade", "opentrade", "add", "accept":
 		return true
 	}
 	return isValidDirection(cmd)
