@@ -160,7 +160,7 @@ func GetInputFromUser() {
 		} else if isCombatCommand(input) {
 			line, _ := in.ReadString('\n')
 			line = strings.TrimSpace(line)
-			msg = newClientMessage2(isCombatCommand(input), input, line)
+			msg = newClientMessage2(true, input, line)
 		} else if isNonCombatCommand(input) {
 			line, _ := in.ReadString('\n')
 			line = strings.TrimSpace(line)

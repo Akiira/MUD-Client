@@ -17,6 +17,13 @@ func newClientMessage(cmd string, val string) ClientMessage {
 	return ClientMessage{CombatAction: false, Command: cmd, Value: val}
 }
 func newClientMessage2(isCombat bool, cmd string, val string) ClientMessage {
+	if isCombat {
+		if cmd == "a" {
+			cmd = "attack"
+		} else if cmd == "c" {
+			cmd = "cast"
+		}
+	}
 	return ClientMessage{CombatAction: isCombat, Command: cmd, Value: val}
 }
 
