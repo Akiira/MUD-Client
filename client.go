@@ -191,13 +191,12 @@ func isOneWordCommand(cmd string) bool {
 		return true
 	case "stats", "save", "exit":
 		return true
-	case "look", "level", "lvl":
+	case "level", "lvl":
 		return true
 	}
 	return false
 }
 
-//TODO consider putting the commands in a file, and then loading them into a hashmap instead
 func isLegalCommand(cmd string) bool {
 	return isCombatCommand(cmd) || isNonCombatCommand(cmd)
 }
@@ -216,7 +215,7 @@ func isNonCombatCommand(cmd string) bool {
 		return true
 	case "stats":
 		return true
-	case "look":
+	case "look", "l":
 		return true
 	case "level", "lvl":
 		return true
