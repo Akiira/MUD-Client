@@ -160,7 +160,7 @@ func GetInputFromUser() {
 		} else if isCombatCommand(input) {
 			line, _ := in.ReadString('\n')
 			line = strings.TrimSpace(line)
-			msg = newClientMessage2(isCombatCommand(input), input, line)
+			msg = newClientMessage2(true, input, line)
 		} else if isNonCombatCommand(input) {
 			line, _ := in.ReadString('\n')
 			line = strings.TrimSpace(line)
@@ -187,56 +187,55 @@ func isOneWordCommand(cmd string) bool {
 	switch cmd {
 	case "accept", "done":
 		return true
-	case "equipment":
+	case "equipment", "eq":
+		return true
+	case "stats", "save", "exit":
+		return true
+	case "level", "lvl":
 		return true
 	}
 	return false
 }
 
-//TODO consider putting the commands in a file, and then loading them into a hashmap instead
 func isLegalCommand(cmd string) bool {
 	return isCombatCommand(cmd) || isNonCombatCommand(cmd)
 }
 
 func isNonCombatCommand(cmd string) bool {
-	switch {
-	case cmd == "auction" || cmd == "bid":
+	switch cmd {
+	case "auction", "bid":
 		return true
-	case cmd == "wield" || cmd == "unwield":
+	case "wield", "unwield", "wi", "uw":
 		return true
-	case cmd == "equip" || cmd == "unequip":
+	case "equip", "unequip", "wear", "we", "remove", "rm":
 		return true
-	case cmd == "inv":
+	case "inv", "inventory", "eq", "equipment":
 		return true
-	case cmd == "save" || cmd == "exit":
+	case "save", "exit":
 		return true
-	case cmd == "stats":
+	case "stats":
 		return true
-	case cmd == "look":
+	case "look", "l":
 		return true
-	case cmd == "get" || cmd == "put" || cmd == "drop":
+	case "level", "lvl":
 		return true
-	case cmd == "move":
+	case "get", "g", "put", "p", "drop", "d":
 		return true
-	case cmd == "say" || cmd == "yell":
+	case "move", "flee":
 		return true
-	case cmd == "trade":
+	case "say", "yell":
 		return true
-	case cmd == "opentrade":
-		return true
-	case cmd == "add":
-		return true
-	case cmd == "accept":
+	case "trade", "opentrade", "add", "accept":
 		return true
 	}
 	return isValidDirection(cmd)
 }
 
 func isCombatCommand(cmd string) bool {
-	switch {
-	case cmd == "attack":
+	switch cmd {
+	case "attack", "a", "kill":
 		return true
-	case cmd == "cast":
+	case "cast":
 		return true
 	}
 
