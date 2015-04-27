@@ -14,15 +14,16 @@ import (
 )
 
 var (
-	servers     map[string]string = make(map[string]string)
-	net_lock    sync.Mutex
-	conn        net.Conn
-	encoder     *gob.Encoder
-	decoder     *gob.Decoder
-	breakSignal bool
-	username    string
-	password    string
-	loggedIn    bool
+	servers         map[string]string = make(map[string]string)
+	net_lock        sync.Mutex
+	conn            net.Conn
+	encoder         *gob.Encoder
+	decoder         *gob.Decoder
+	breakSignal     bool
+	username        string
+	password        string
+	loggedIn        bool
+	cachePlayerInfo []FormattedString
 )
 
 func main() {
@@ -133,7 +134,8 @@ func ReadFromServer() {
 			encoder.Encode(newClientMessage("ping", "ping"))
 		} else {
 			printFormatedOutput(serversResponse.Value)
-			printFormatedOutput(serversResponse.getFormattedCharInfo())
+			cachePlayerInfo = serversResponse.getFormattedCharInfo()
+			printFormatedOutput(cachePlayerInfo)
 		}
 
 		if breakSignal || serversResponse.MsgType == EXIT {
@@ -167,6 +169,7 @@ func GetInputFromUser() {
 			msg = newClientMessage(input, line)
 		} else {
 			fmt.Println("\nThat does not appear to be a valid command.\n")
+			printFormatedOutput(cachePlayerInfo)
 			continue
 		}
 
