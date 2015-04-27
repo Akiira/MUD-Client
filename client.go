@@ -43,7 +43,7 @@ func readServerList() {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		readData := strings.Fields(scanner.Text())
-		fmt.Println(readData)
+		//fmt.Println(readData)
 		servers[readData[0]] = readData[1]
 	}
 
@@ -174,7 +174,7 @@ func GetInputFromUser() {
 		}
 
 		net_lock.Lock()
-		fmt.Println("Sending: ", msg)
+		//fmt.Println("Sending: ", msg)
 		err = encoder.Encode(msg)
 		checkError(err)
 		net_lock.Unlock()
@@ -276,9 +276,9 @@ func isValidDirection(direction string) bool {
 func connectToServer(address string) {
 	var err error //Dont remove me
 
-	fmt.Println("\tAddress: ", address)
+	//fmt.Println("\tAddress: ", address)
 	conn, err = net.Dial("tcp", address)
-	fmt.Println("\tFinished dialing.")
+	//fmt.Println("\tFinished dialing.")
 	checkError(err)
 
 	encoder = gob.NewEncoder(conn)
