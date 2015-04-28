@@ -75,6 +75,20 @@ func Start() (choice string) {
 	return choice
 }
 
+func connectToServer(address string) {
+	var err error //Dont remove me
+
+	conn, err = net.Dial("tcp", address)
+	checkError(err)
+
+	encoder = gob.NewEncoder(conn)
+	decoder = gob.NewDecoder(conn)
+
+	if loggedIn {
+		encoder.Encode(newClientMessage("initialMessage", username+" "+password))
+	}
+}
+
 func CreateNewCharacter() {
 	connectToServer(servers["newChar"])
 	go ReadFromServer()
@@ -149,18 +163,18 @@ func GetInputFromUser() {
 	in := bufio.NewReader(os.Stdin)
 	for {
 		var msg ClientMessage
-		
+
 		line, err := in.ReadString('\n')
 		checkError(err)
 		line = strings.TrimSpace(strings.ToLower(line))
 
 		cmd := strings.Split(line, " ")[0]
-		
+
 		if isValidDirection(cmd) {
 			msg = newClientMessage("move", cmd)
 		} else {
 			msg = newClientMessage2(isCombatCommand(cmd), cmd, line)
-		} 
+		}
 
 		net_lock.Lock()
 		fmt.Println("Sending: ", msg)
@@ -173,20 +187,6 @@ func GetInputFromUser() {
 		}
 	}
 	breakSignal = true
-}
-
-func isOneWordCommand(cmd string) bool {
-	switch cmd {
-	case "accept", "done":
-		return true
-	case "equipment", "eq":
-		return true
-	case "stats", "save", "exit":
-		return true
-	case "level", "lvl":
-		return true
-	}
-	return false
 }
 
 func isCombatCommand(cmd string) bool {
@@ -226,22 +226,6 @@ func isValidDirection(direction string) bool {
 	}
 
 	return false
-}
-
-func connectToServer(address string) {
-	var err error //Dont remove me
-
-	//fmt.Println("\tAddress: ", address)
-	conn, err = net.Dial("tcp", address)
-	//fmt.Println("\tFinished dialing.")
-	checkError(err)
-
-	encoder = gob.NewEncoder(conn)
-	decoder = gob.NewDecoder(conn)
-
-	if loggedIn {
-		encoder.Encode(newClientMessage("initialMessage", username+" "+password))
-	}
 }
 
 func printFormatedOutput(output []FormattedString) {
