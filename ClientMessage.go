@@ -18,29 +18,43 @@ func newClientMessage(cmd string, val string) ClientMessage {
 }
 func newClientMessage2(isCombat bool, cmd string, line string) ClientMessage {
 	val := strings.TrimSpace(strings.TrimPrefix(line, cmd))
-	return ClientMessage{CombatAction: isCombat, Command: cmd, Value: val}
+	
+	msg := ClientMessage{CombatAction: isCombat, Command: cmd, Value: val}
+	
+	if msg.IsTradeCommand() && len(val) == 0 {
+		msg.setValue(cmd)
+	}
+	
+	return msg
+}
+
+func (msg *ClientMessage) IsTradeCommand() bool {
+	switch msg.Command {
+	case "accept", "done", "add", "reject":
+		return true
+	}
+
+	return false
+}
+
+func (msg *ClientMessage) setValue(val string) {
+	msg.Value = val
 }
 
 func (msg *ClientMessage) setCommand(cmd string) {
-	msg.CombatAction = false
 	msg.Command = cmd
-	msg.Value = ""
 }
 
 func (msg *ClientMessage) setCommandAndValue(cmd string, val string) {
-	msg.CombatAction = false
 	msg.Command = cmd
 	msg.Value = val
 }
 
 func (msg *ClientMessage) setCommandWithTimestamp(cmd string) {
-	msg.CombatAction = false
 	msg.Command = cmd + ";" + time.Now().String()
-	msg.Value = ""
 }
 
 func (msg *ClientMessage) setMsgWithTimestamp(cmd string, value string) {
-	msg.CombatAction = false
 	msg.Command = cmd + ";" + time.Now().String()
 	msg.Value = value
 }
