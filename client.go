@@ -149,37 +149,26 @@ func GetInputFromUser() {
 	in := bufio.NewReader(os.Stdin)
 	for {
 		var msg ClientMessage
-		var input string
-
-		_, err := fmt.Scan(&input)
+		
+		line, err := in.ReadString('\n')
 		checkError(err)
-		input = strings.TrimSpace(input)
+		line = strings.TrimSpace(strings.ToLower(line))
 
-		if isValidDirection(input) {
-			msg = newClientMessage("move", input)
-		} else if isOneWordCommand(input) {
-			msg = newClientMessage(input, input)
-		} else if isCombatCommand(input) {
-			line, _ := in.ReadString('\n')
-			line = strings.TrimSpace(line)
-			msg = newClientMessage2(true, input, line)
-		} else if isNonCombatCommand(input) {
-			line, _ := in.ReadString('\n')
-			line = strings.TrimSpace(line)
-			msg = newClientMessage(input, line)
+		cmd := strings.Split(line, " ")[0]
+		
+		if isValidDirection(cmd) {
+			msg = newClientMessage("move", cmd)
 		} else {
-			fmt.Println("\nThat does not appear to be a valid command.\n")
-			printFormatedOutput(cachePlayerInfo)
-			continue
-		}
+			msg = newClientMessage2(isCombatCommand(cmd), cmd, line)
+		} 
 
 		net_lock.Lock()
-		//fmt.Println("Sending: ", msg)
+		fmt.Println("Sending: ", msg)
 		err = encoder.Encode(msg)
 		checkError(err)
 		net_lock.Unlock()
 
-		if input == "exit" {
+		if cmd == "exit" {
 			break
 		}
 	}
@@ -198,40 +187,6 @@ func isOneWordCommand(cmd string) bool {
 		return true
 	}
 	return false
-}
-
-func isLegalCommand(cmd string) bool {
-	return isCombatCommand(cmd) || isNonCombatCommand(cmd)
-}
-
-func isNonCombatCommand(cmd string) bool {
-	switch cmd {
-	case "auction", "bid":
-		return true
-	case "wield", "unwield", "wi", "uw":
-		return true
-	case "equip", "unequip", "wear", "we", "remove", "rm":
-		return true
-	case "inv", "inventory", "eq", "equipment":
-		return true
-	case "save", "exit":
-		return true
-	case "stats":
-		return true
-	case "look", "l":
-		return true
-	case "level", "lvl":
-		return true
-	case "get", "g", "put", "p", "drop", "d":
-		return true
-	case "move", "flee":
-		return true
-	case "say", "yell":
-		return true
-	case "trade", "opentrade", "add", "accept":
-		return true
-	}
-	return isValidDirection(cmd)
 }
 
 func isCombatCommand(cmd string) bool {
