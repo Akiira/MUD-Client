@@ -177,7 +177,7 @@ func GetInputFromUser() {
 		}
 
 		net_lock.Lock()
-		fmt.Println("Sending: ", msg)
+		//fmt.Println("Sending: ", msg)
 		err = encoder.Encode(msg)
 		checkError(err)
 		net_lock.Unlock()
